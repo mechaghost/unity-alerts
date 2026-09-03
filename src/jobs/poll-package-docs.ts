@@ -99,10 +99,15 @@ async function probePackage(pkg: string, minors: string[]): Promise<ProbeResult>
           return { status: "aligned", aligned: { unityMinor: minor, version: top.version, date: top.date, url } };
         }
         // 200 but non-matching -> definitive "not aligned at this minor".
-      } else if (res.status >= 500) {
-        sawTransient = true; // server error - don't treat as definitive
+      } else if (res.status >= 500 || res.status === 403 || res.status === 429) {
+        // 5xx, a WAF/permission 403, or a 429 rate limit say nothing about
+        // whether the changelog exists. Treating them as "not here" would
+        // clear every aligned row the moment the docs host tightened access
+        // - the silent-degradation class CLAUDE.md rule 2 exists to stop.
+        sawTransient = true;
       }
-      // 404 / other 4xx -> definitive "not here", try the next minor.
+      // 404 / 410 (and any other 4xx) -> definitive "not here", try the
+      // next minor.
     } catch {
       sawTransient = true; // network/timeout - transient
     }

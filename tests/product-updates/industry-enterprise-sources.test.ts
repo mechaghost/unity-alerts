@@ -153,6 +153,21 @@ describe("Industry and enterprise Product Update adapters", () => {
     expect(observations.map((o) => o.version)).toEqual(["1.9.0"]);
   });
 
+  test("keeps the pre-split AWS index target on the manifest as retired", () => {
+    // AWS split its release notes behind an index, so the single "aws"
+    // target became four per-version targets. registerProductUpdateAdapter
+    // never retires a target that simply vanishes from the manifest, so
+    // the old row stayed `active` and permanently overdue. The entry has
+    // to stay here, flagged retired, so the DB row flips to
+    // manually-retired instead of degrading health forever.
+    const targets = vpcAwsAdapter.manifest.targets;
+    const legacy = targets.find((target) => target.targetKey === "aws");
+    expect(legacy).toMatchObject({ retired: true, documentFormat: "markdown" });
+    expect(
+      targets.filter((target) => !target.retired).map((target) => target.targetKey)
+    ).toEqual(["1-4", "1-3", "1-2", "1-1"]);
+  });
+
   test("quarantines structurally unrelated enterprise pages", () => {
     expect(() => parse(unityStudioAdapter, "index", "<h1>Other</h1>")).toThrow(
       /root heading/

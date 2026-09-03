@@ -44,6 +44,18 @@ export const vpcAwsAdapter = createSelfHostedAdapter({
     // already enumerates its per-version targets - a new line (1.5, ...)
     // needs an entry here.
     targets: [
+      // The pre-split index target. registerProductUpdateAdapter only upserts
+      // targets that are still in the manifest - it never retires one that
+      // vanishes - so dropping this entry left its DB row `active` and
+      // permanently overdue. Keeping it here with `retired` flips the row to
+      // manually-retired, which the runner skips and health ignores.
+      {
+        targetKey: "aws",
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown",
+        retired: true
+      },
       {
         targetKey: "1-4",
         url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes-1-4",

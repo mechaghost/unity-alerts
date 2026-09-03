@@ -271,7 +271,7 @@ out docs that redirect to a package's own latest) records the highest match in
 shows "Unity 6.4 ships as 6.4.0 (version-aligned)" only when that differs from
 the registry latest. The set is self-maintaining (a row clears when a package
 stops being aligned) and has grown from the original three (entities,
-entities.graphics, collections) to seven as of 2026-07 — check /packages for
+entities.graphics, collections) to fifteen as of 2026-09 — check /packages for
 the current list rather than trusting any hand-written enumeration.
 
 Some ids also moved off the registry entirely and must use the right name or
@@ -347,7 +347,7 @@ sticky cookie for persona/saved presets. Plan + decisions in
 
 ## Current Test Coverage
 
-`npm test` runs the full Vitest suite — 700 tests across 82 files
+`npm test` runs the full Vitest suite — 701 tests across 83 files
 covering parsers, classification, search SQL, lane logic, ingestion
 normalization, package-version reconciliation (editor "Package changes"
 → `editor_package_versions`, the docs-probe unified-versioning parser,

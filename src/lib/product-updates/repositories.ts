@@ -1071,6 +1071,10 @@ export async function listProductUpdateHealth(): Promise<ProductUpdateHealth[]> 
              t.circuit_open_until, t.lease_expires_at, t.last_error
       FROM product_update_targets t
       JOIN product_update_sources s ON s.id = t.source_id
+      -- A retired target is a deliberate manifest decision, not a fault.
+      -- Reporting it would pin /api/updates/health at "degraded" forever
+      -- over a row the runner will never schedule again.
+      WHERE t.status <> 'manually-retired'
       ORDER BY s.source_key, t.target_key
     `
   );
