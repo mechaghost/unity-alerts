@@ -52,7 +52,7 @@ export const ugsAdapter: ProductUpdateAdapter = {
     sourceKey: "ugs",
     displayName: "Unity Gaming Services release notes",
     family: "platform-services",
-    parserVersion: "ugs-html-v2",
+    parserVersion: "ugs-md-v3",
     displayPriority: 50,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -65,7 +65,8 @@ export const ugsAdapter: ProductUpdateAdapter = {
       {
         targetKey: "aggregate",
         url: URL,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

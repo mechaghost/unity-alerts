@@ -15,6 +15,7 @@ import {
   releaseProductUpdateLease,
   tryAcquireProductUpdateLease
 } from "./repositories";
+import { markdownToHtml } from "./markdown";
 import {
   fetchProductUpdateTarget,
   ProductUpdateHttpError,
@@ -286,7 +287,14 @@ async function runTarget(
       etag: fetched.etag,
       lastModified: fetched.lastModified,
       sha256: fetched.sha256,
-      text: fetched.text
+      // Markdown targets store their snapshot verbatim; the adapters were
+      // written against a DOM, so render it here rather than in the
+      // fetcher. A replay therefore re-runs the conversion instead of
+      // trusting a derived artefact.
+      text:
+        targetManifest.documentFormat === "markdown"
+          ? markdownToHtml(fetched.text)
+          : fetched.text
     };
     const observations = validateObservations(
       adapter.parse(snapshot),

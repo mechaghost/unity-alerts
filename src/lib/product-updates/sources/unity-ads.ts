@@ -50,7 +50,7 @@ function createUnityAdsAdapter(platform: UnityAdsPlatform): ProductUpdateAdapter
       sourceKey: `unity-ads-${platform.key}`,
       displayName: `Unity Ads ${platform.label} SDK changelog`,
       family: "monetization",
-      parserVersion: "unity-ads-html-v1",
+      parserVersion: "unity-ads-md-v1",
       displayPriority: 10,
       allowedEvidenceHosts: ["docs.unity.com"],
       cadenceHours: 24,
@@ -63,7 +63,8 @@ function createUnityAdsAdapter(platform: UnityAdsPlatform): ProductUpdateAdapter
         {
           targetKey: platform.key,
           url: UNITY_ADS_CHANGELOG_URL,
-          allowedHosts: ["docs.unity.com"]
+          allowedHosts: ["docs.unity.com"],
+          documentFormat: "markdown"
         }
       ]
     },

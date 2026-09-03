@@ -24,7 +24,7 @@ export const assetTransformerAdapter: ProductUpdateAdapter = {
     sourceKey: "asset-transformer",
     displayName: "Asset Transformer SDK changelog",
     family: "industry-enterprise",
-    parserVersion: "asset-transformer-html-v1",
+    parserVersion: "asset-transformer-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 7 * 24,
@@ -37,7 +37,8 @@ export const assetTransformerAdapter: ProductUpdateAdapter = {
       {
         targetKey: "sdk",
         url: ASSET_TRANSFORMER_CHANGELOG,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

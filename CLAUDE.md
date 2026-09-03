@@ -121,6 +121,22 @@ checks that stay meaningful. `severity: "error"` fails the run;
 `"warn"` reports. Add a check whenever a data bug is found — that is
 what converts a months-long silent corruption into a red cron run.
 
+**4. docs.unity.com is client-rendered - read the `.md` twin.** The
+served HTML has no `h1`/`h2`/`h3` at all; the article survives only as
+*compiled MDX* inside the Flight payload (`_jsx(_components.li, …)`), so
+`rsc-flight.ts` can't recover it and a regex over compiled JSX is exactly
+what rule 1 forbids. Every page publishes a markdown twin at `<url>.md`
+(`text/markdown`) whose heading/list structure matches the DOM the
+adapters already expect. A target declares `documentFormat: "markdown"`;
+the fetcher requests the twin (reporting the human URL downstream so
+`sourceUrl`s stay linkable) and the runner renders it via
+`markdownToHtml` just before parsing - so the *snapshot stays raw
+markdown* and a replay re-runs the conversion. When this broke, sixteen
+targets across four crons failed at once with "root heading is missing".
+`UNITY_DOCS_CONTRACT=1` runs the live contract test that catches it
+recurring; `node scripts/capture-product-update-fixtures.mjs` refreshes
+the captured markdown fixtures.
+
 **Fixtures come from real pages.** `tests/fixtures/resources/*.flight.txt`
 are bytes captured off unity.com (regenerate:
 `node scripts/capture-resource-fixtures.mjs`). Hand-authored fixtures
@@ -331,7 +347,7 @@ sticky cookie for persona/saved presets. Plan + decisions in
 
 ## Current Test Coverage
 
-`npm test` runs the full Vitest suite — 677 tests across 83 files
+`npm test` runs the full Vitest suite — 700 tests across 82 files
 covering parsers, classification, search SQL, lane logic, ingestion
 normalization, package-version reconciliation (editor "Package changes"
 → `editor_package_versions`, the docs-probe unified-versioning parser,

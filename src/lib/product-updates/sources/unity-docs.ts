@@ -71,7 +71,21 @@ export function parseVersionedUnityDocs(
     if (!version) {
       throw new Error(`${config.manifest.displayName} has an invalid version: ${headingText}`);
     }
-    const releaseNodes = $(heading).nextUntil("h2");
+    // Unity authors some sub-sections at the SAME level as the version
+    // heading ("## Version 5.26.0" followed by a sibling "## Release
+    // overview"), so stopping at any h2 truncated those releases to zero
+    // items. The real boundary is the next *version* heading. The
+    // hand-authored fixtures nested these as h3 and hid this - the real
+    // captured markdown does not.
+    const following = $(heading).nextAll().toArray();
+    const nextRelease = following.findIndex(
+      (node) =>
+        $(node).is("h2") &&
+        config.releaseHeading.test(normalizeProductUpdateText($(node).text()))
+    );
+    const releaseNodes = $(
+      nextRelease === -1 ? following : following.slice(0, nextRelease)
+    );
     const items = extractUnityDocsItems($, releaseNodes, "Updates");
     const releaseDate = config.extractReleaseDate?.($, releaseNodes) ?? null;
     const channel = config.channel?.(version) ?? null;

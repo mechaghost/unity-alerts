@@ -13,6 +13,14 @@ export type ProductUpdateTargetManifest = {
   allowedHosts: readonly string[];
   displayPriority?: number;
   retired?: boolean;
+  /** Wire format to fetch and parse.
+   *
+   *  'markdown' targets a client-rendered docs.unity.com page whose HTML
+   *  no longer contains the article: the fetcher requests the `<url>.md`
+   *  twin instead and the runner renders it to HTML before parsing, so
+   *  the adapter still sees the DOM it was written against. Defaults to
+   *  'html'. */
+  documentFormat?: "html" | "markdown";
 };
 
 export type ProductUpdateAdapterManifest = {

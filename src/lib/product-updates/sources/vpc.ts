@@ -28,30 +28,56 @@ export const vpcAwsAdapter = createSelfHostedAdapter({
     sourceKey: "vpc-aws",
     displayName: "Unity Cloud Self-Hosted AWS release notes",
     family: "industry-enterprise",
-    parserVersion: "vpc-aws-html-v1",
+    parserVersion: "vpc-aws-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 7 * 24,
     timeoutMs: 30_000,
     maxResponseBytes: 2 * 1024 * 1024,
-    minimumExpectedRecords: 10,
+    // Per-version pages carry as few as one release each, so the old
+    // whole-page floor of 10 would fail every target.
+    minimumExpectedRecords: 1,
     maximumExpectedRecords: 100,
     maximumRecordDropFraction: 0.5,
+    // AWS moved its release notes behind an index: the old single page now
+    // just links out to one page per minor line. Mirrors how unity-studio
+    // already enumerates its per-version targets - a new line (1.5, ...)
+    // needs an entry here.
     targets: [
       {
-        targetKey: "aws",
-        url: "https://docs.unity.com/en-us/cloud/virtual-private-cloud/aws/release-notes",
-        allowedHosts: ["docs.unity.com"]
+        targetKey: "1-4",
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes-1-4",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
+      },
+      {
+        targetKey: "1-3",
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes-1-3",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
+      },
+      {
+        targetKey: "1-2",
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes-1-2",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
+      },
+      {
+        targetKey: "1-1",
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/aws/release-notes-1-1",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },
+  // Per-version pages suffix the heading with their minor line.
   rootHeading:
-    /^release notes for self-hosted deployment in amazon web services$/i,
+    /^release notes for self-hosted deployment in amazon web services(?:\s+[\d.]+)?$/i,
   product: {
     componentKey: "aws",
     componentName: "AWS",
     canonicalUrl:
-      "https://docs.unity.com/en-us/cloud/virtual-private-cloud/aws"
+      "https://docs.unity.com/en-us/self-hosted-deployment/aws"
   }
 });
 
@@ -60,7 +86,7 @@ export const vpcOnPremisesAdapter = createSelfHostedAdapter({
     sourceKey: "vpc-on-premises",
     displayName: "Unity Cloud Self-Hosted on-premises release notes",
     family: "industry-enterprise",
-    parserVersion: "vpc-on-premises-html-v1",
+    parserVersion: "vpc-on-premises-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 7 * 24,
@@ -72,8 +98,9 @@ export const vpcOnPremisesAdapter = createSelfHostedAdapter({
     targets: [
       {
         targetKey: "on-premises",
-        url: "https://docs.unity.com/en-us/cloud/virtual-private-cloud/on-premises/release-notes",
-        allowedHosts: ["docs.unity.com"]
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/on-premises/release-notes",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },
@@ -82,7 +109,7 @@ export const vpcOnPremisesAdapter = createSelfHostedAdapter({
     componentKey: "on-premises",
     componentName: "On-premises",
     canonicalUrl:
-      "https://docs.unity.com/en-us/cloud/virtual-private-cloud/on-premises"
+      "https://docs.unity.com/en-us/self-hosted-deployment/on-premises"
   }
 });
 
@@ -91,7 +118,7 @@ export const vpctlAdapter: ProductUpdateAdapter = {
     sourceKey: "vpctl",
     displayName: "vpctl changelog",
     family: "industry-enterprise",
-    parserVersion: "vpctl-html-v1",
+    parserVersion: "vpctl-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 7 * 24,
@@ -103,8 +130,9 @@ export const vpctlAdapter: ProductUpdateAdapter = {
     targets: [
       {
         targetKey: "cli",
-        url: "https://docs.unity.com/en-us/cloud/virtual-private-cloud/vpctl/changelog",
-        allowedHosts: ["docs.unity.com"]
+        url: "https://docs.unity.com/en-us/self-hosted-deployment/vpctl/changelog",
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },
@@ -164,7 +192,7 @@ function parseSelfHostedReleaseNotes(
       productDescription:
         "Self-hosted Unity Cloud deployment release notes, formerly Unity Virtual Private Cloud.",
       productCanonicalUrl:
-        "https://docs.unity.com/en-us/cloud/virtual-private-cloud",
+        "https://docs.unity.com/en-us/self-hosted-deployment",
       componentKey: config.product.componentKey,
       sourceUpdateKey: version.toLowerCase(),
       canonicalKey: `version:${version.toLowerCase()}`,
@@ -233,7 +261,7 @@ export function parseVpctlChangelog(
       productDescription:
         "Command-line deployment and operations tooling for Unity Cloud Self-Hosted.",
       productCanonicalUrl:
-        "https://docs.unity.com/en-us/cloud/virtual-private-cloud/vpctl",
+        "https://docs.unity.com/en-us/self-hosted-deployment/vpctl",
       componentKey: "cli",
       sourceUpdateKey: version.toLowerCase(),
       canonicalKey: `version:${version.toLowerCase()}`,

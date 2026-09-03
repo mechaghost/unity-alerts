@@ -78,7 +78,7 @@ describe("Industry and enterprise Product Update adapters", () => {
   });
 
   test("keeps AWS and on-premises Self-Hosted histories independent", () => {
-    const aws = parse(vpcAwsAdapter, "aws", readFixture("vpc-aws.html"));
+    const aws = parse(vpcAwsAdapter, "1-4", readFixture("vpc-aws.html"));
     const onPremises = parse(
       vpcOnPremisesAdapter,
       "on-premises",
@@ -105,7 +105,7 @@ describe("Industry and enterprise Product Update adapters", () => {
     // written entirely as prose produced zero items and threw "has no
     // changes" - which quarantined the source as parser-drift and crashed
     // the nightly industry-enterprise cron.
-    const aws = parse(vpcAwsAdapter, "aws", readFixture("vpc-aws.html"));
+    const aws = parse(vpcAwsAdapter, "1-4", readFixture("vpc-aws.html"));
     const prose = aws.find((observation) => observation.version === "1.2.2");
 
     expect(prose).toBeDefined();
@@ -149,7 +149,7 @@ describe("Industry and enterprise Product Update adapters", () => {
         <ul><li>Fixed a real thing.</li></ul>
       </main>`;
 
-    const observations = parse(vpcAwsAdapter, "aws", page);
+    const observations = parse(vpcAwsAdapter, "1-4", page);
     expect(observations.map((o) => o.version)).toEqual(["1.9.0"]);
   });
 
@@ -160,7 +160,7 @@ describe("Industry and enterprise Product Update adapters", () => {
     expect(() =>
       parse(assetTransformerAdapter, "sdk", "<h1>Other</h1>")
     ).toThrow(/root heading/);
-    expect(() => parse(vpcAwsAdapter, "aws", "<h1>Other</h1>")).toThrow(
+    expect(() => parse(vpcAwsAdapter, "1-4", "<h1>Other</h1>")).toThrow(
       /root heading/
     );
     expect(() => parse(vpctlAdapter, "cli", "<h1>Other</h1>")).toThrow(

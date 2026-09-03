@@ -19,7 +19,7 @@ export const unityCliAdapter: ProductUpdateAdapter = {
     sourceKey: "unity-cli",
     displayName: "Unity CLI release notes",
     family: "editor-tooling",
-    parserVersion: "unity-cli-html-v1",
+    parserVersion: "unity-cli-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 12,
@@ -32,7 +32,8 @@ export const unityCliAdapter: ProductUpdateAdapter = {
       {
         targetKey: "standalone",
         url: CLI_RELEASE_NOTES_URL,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

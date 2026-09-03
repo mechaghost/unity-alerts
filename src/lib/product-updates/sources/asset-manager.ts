@@ -18,7 +18,7 @@ export const assetManagerAdapter: ProductUpdateAdapter = {
     sourceKey: "asset-manager",
     displayName: "Unity Asset Manager what's new",
     family: "platform-services",
-    parserVersion: "asset-manager-html-v1",
+    parserVersion: "asset-manager-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -31,7 +31,8 @@ export const assetManagerAdapter: ProductUpdateAdapter = {
       {
         targetKey: "all-components",
         url: URL,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

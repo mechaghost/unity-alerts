@@ -11,7 +11,7 @@ export const unityVersionControlAdapter = createVersionedUnityDocsAdapter({
     sourceKey: "unity-version-control",
     displayName: "Unity Version Control 11.x release notes",
     family: "platform-services",
-    parserVersion: "unity-version-control-html-v1",
+    parserVersion: "unity-version-control-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -24,7 +24,8 @@ export const unityVersionControlAdapter = createVersionedUnityDocsAdapter({
       {
         targetKey: "major-11",
         url: URL,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

@@ -7,7 +7,7 @@ export const licensingServerAdapter = createVersionedUnityDocsAdapter({
     sourceKey: "licensing-server",
     displayName: "Unity Licensing Server what's new",
     family: "platform-services",
-    parserVersion: "licensing-server-html-v1",
+    parserVersion: "licensing-server-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -20,7 +20,8 @@ export const licensingServerAdapter = createVersionedUnityDocsAdapter({
       {
         targetKey: "server",
         url: URL,
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

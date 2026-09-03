@@ -52,7 +52,11 @@ async function fetchAttempt(
 ): Promise<ProductUpdateFetchResult> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const requestedUrl = target.url;
-  let current = new URL(requestedUrl);
+  // A markdown target still *identifies* itself by the human page: the
+  // `.md` twin is a fetch detail, and observations link readers to the
+  // page, not to a raw markdown file. So request the twin but report the
+  // human URL back (see stripMarkdownTwinSuffix on the way out).
+  let current = new URL(markdownTwinUrl(target));
   const maxRedirects = options.maxRedirects ?? 5;
   const visited = new Set<string>();
   const headers = new Headers({
@@ -60,7 +64,8 @@ async function fetchAttempt(
       options.userAgent ??
       process.env.INGESTION_USER_AGENT ??
       "UnityReleasesBot/0.1 (+https://github.com/mechaghost/unity-releases)",
-    accept: "text/html,application/json,application/xml,application/rss+xml,text/plain"
+    accept:
+      "text/html,text/markdown,application/json,application/xml,application/rss+xml,text/plain"
   });
   if (state.validatedEtag) headers.set("if-none-match", state.validatedEtag);
   if (state.validatedLastModified) {
@@ -97,7 +102,7 @@ async function fetchAttempt(
       return {
         kind: "not-modified",
         requestedUrl,
-        finalUrl: current.href,
+        finalUrl: stripMarkdownTwinSuffix(current.href, target),
         status: 304,
         etag: response.headers.get("etag"),
         lastModified: response.headers.get("last-modified")
@@ -130,7 +135,7 @@ async function fetchAttempt(
     return {
       kind: "content",
       requestedUrl,
-      finalUrl: current.href,
+      finalUrl: stripMarkdownTwinSuffix(current.href, target),
       status: response.status,
       etag: response.headers.get("etag"),
       lastModified: response.headers.get("last-modified"),
@@ -140,6 +145,29 @@ async function fetchAttempt(
   }
 
   throw new Error(`Redirect handling exhausted for ${requestedUrl}`);
+}
+
+/** URL actually requested for a target: the `.md` twin for markdown
+ *  sources, the page itself otherwise. */
+export function markdownTwinUrl(target: ProductUpdateTargetManifest): string {
+  if (target.documentFormat !== "markdown") return target.url;
+  const url = new URL(target.url);
+  if (url.pathname.endsWith(".md")) return url.href;
+  url.pathname = `${url.pathname.replace(/\/+$/, "")}.md`;
+  return url.href;
+}
+
+/** Inverse of {@link markdownTwinUrl} for the URL we report downstream,
+ *  so adapters keep building reader-facing links. */
+function stripMarkdownTwinSuffix(
+  href: string,
+  target: ProductUpdateTargetManifest
+): string {
+  if (target.documentFormat !== "markdown") return href;
+  const url = new URL(href);
+  if (!url.pathname.endsWith(".md")) return url.href;
+  url.pathname = url.pathname.slice(0, -".md".length);
+  return url.href;
 }
 
 async function readBoundedText(response: Response, maxBytes: number) {

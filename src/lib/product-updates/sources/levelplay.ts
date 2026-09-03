@@ -72,7 +72,7 @@ function createLevelPlaySdkAdapter(
       sourceKey: `levelplay-${platform.key}`,
       displayName: `LevelPlay ${platform.label} SDK changelog`,
       family: "monetization",
-      parserVersion: "levelplay-sdk-html-v1",
+      parserVersion: "levelplay-sdk-md-v1",
       displayPriority: 10,
       allowedEvidenceHosts: ["docs.unity.com"],
       cadenceHours: 24,
@@ -85,7 +85,8 @@ function createLevelPlaySdkAdapter(
         {
           targetKey: platform.key,
           url: platform.url,
-          allowedHosts: ["docs.unity.com"]
+          allowedHosts: ["docs.unity.com"],
+          documentFormat: "markdown"
         }
       ]
     },

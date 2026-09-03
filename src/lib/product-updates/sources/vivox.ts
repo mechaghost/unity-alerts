@@ -5,7 +5,7 @@ export const vivoxUnityAdapter = createVersionedUnityDocsAdapter({
     sourceKey: "vivox-unity",
     displayName: "Vivox Unity SDK release notes",
     family: "platform-services",
-    parserVersion: "vivox-unity-html-v1",
+    parserVersion: "vivox-unity-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -18,7 +18,8 @@ export const vivoxUnityAdapter = createVersionedUnityDocsAdapter({
       {
         targetKey: "unity",
         url: "https://docs.unity.com/en-us/vivox-unity/release-notes",
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },
@@ -41,7 +42,7 @@ export const vivoxCoreAdapter = createVersionedUnityDocsAdapter({
     sourceKey: "vivox-core",
     displayName: "Vivox Core SDK release notes",
     family: "platform-services",
-    parserVersion: "vivox-core-html-v1",
+    parserVersion: "vivox-core-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -54,7 +55,8 @@ export const vivoxCoreAdapter = createVersionedUnityDocsAdapter({
       {
         targetKey: "core",
         url: "https://docs.unity.com/vivox-core/core-release-notes",
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },
@@ -77,7 +79,7 @@ export const vivoxUnrealAdapter = createVersionedUnityDocsAdapter({
     sourceKey: "vivox-unreal",
     displayName: "Vivox Unreal SDK release notes",
     family: "platform-services",
-    parserVersion: "vivox-unreal-html-v1",
+    parserVersion: "vivox-unreal-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -90,7 +92,8 @@ export const vivoxUnrealAdapter = createVersionedUnityDocsAdapter({
       {
         targetKey: "unreal",
         url: "https://docs.unity.com/en-us/vivox-unreal/unreal-release-notes",
-        allowedHosts: ["docs.unity.com"]
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown"
       }
     ]
   },

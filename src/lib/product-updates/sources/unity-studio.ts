@@ -47,7 +47,7 @@ export const unityStudioAdapter: ProductUpdateAdapter = {
     sourceKey: "unity-studio",
     displayName: "Unity Studio what's new",
     family: "industry-enterprise",
-    parserVersion: "unity-studio-html-v1",
+    parserVersion: "unity-studio-md-v1",
     displayPriority: 10,
     allowedEvidenceHosts: ["docs.unity.com"],
     cadenceHours: 24,
@@ -61,12 +61,14 @@ export const unityStudioAdapter: ProductUpdateAdapter = {
         targetKey: "index",
         url: STUDIO_WHATS_NEW_URL,
         allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown",
         displayPriority: 100
       },
       ...UNITY_STUDIO_RELEASE_TARGETS.map(([targetKey, path]) => ({
         targetKey,
         url: `${STUDIO_BASE_URL}${path}`,
-        allowedHosts: ["docs.unity.com"] as const,
+        allowedHosts: ["docs.unity.com"],
+        documentFormat: "markdown" as const,
         displayPriority: 10
       }))
     ]
