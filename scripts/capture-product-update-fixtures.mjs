@@ -31,6 +31,9 @@ const FIXTURES = [
   { name: "vpctl", url: "https://docs.unity.com/en-us/self-hosted-deployment/vpctl/changelog" },
   // flat version list, one bullet per release
   { name: "unity-ads-unity", url: "https://docs.unity.com/en-us/grow/ads/changelog" },
+  // one table whose Notes cells span many lines - the exporter dumps the
+  // continuation lines after the row, which marked reads as end-of-table
+  { name: "levelplay-android", url: "https://docs.unity.com/en-us/grow/levelplay/sdk/android/changelog" },
   // small whats-new page
   { name: "licensing-server", url: "https://docs.unity.com/en-us/licensing-server/whats-new" },
   // release-notes page with per-version prose + lists

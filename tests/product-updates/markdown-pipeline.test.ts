@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import { markdownToHtml } from "../../src/lib/product-updates/markdown";
+import { markdownToHtml, repairUnityDocsTables } from "../../src/lib/product-updates/markdown";
 import { markdownTwinUrl } from "../../src/lib/product-updates/fetcher";
 import {
   PRODUCT_UPDATE_ADAPTERS,
@@ -61,6 +61,66 @@ describe("docs.unity.com markdown pipeline", () => {
     expect(html).toMatch(/<ul>[\s\S]*<ul>/);
   });
 
+  describe("repairUnityDocsTables", () => {
+    // Unity's exporter has no GFM syntax for a multi-line cell, so it puts
+    // the first line in the row and dumps the rest as bare lines after it.
+    // marked closed the table there: LevelPlay kept 1 of 124 rows and
+    // Unity Ads iOS lost 34 of 65. Both were caught by the record floors.
+    const table = [
+      "| SDK Version | Release Date | Notes",
+      "| ----------- | ------------ | -----",
+      "| 9.6.0       | 2026/08/13   | * Improved init resilience.",
+      "* Reduced init time.",
+      "  * Nested detail line.",
+      "",
+      "- Fixed a crash in `Foo|Bar`.",
+      "| 9.5.0       | 2026/07/01   | 1. Updated the GDPR API.",
+      "Run-on prose continues the cell.",
+      "| 9.4.4       | 2026/06/17   | * Single-line row."
+    ].join("\n");
+
+    test("folds every continuation line back into its row", () => {
+      const rows = repairUnityDocsTables(table).split("\n").filter((l) => l.startsWith("| 9."));
+      expect(rows).toHaveLength(3);
+      expect(rows[0]).toBe(
+        "| 9.6.0       | 2026/08/13   | Improved init resilience. Reduced init time. Nested detail line. Fixed a crash in `Foo\\|Bar`. |"
+      );
+      expect(rows[1]).toBe("| 9.5.0       | 2026/07/01   | Updated the GDPR API. Run-on prose continues the cell. |");
+      expect(rows[2]).toBe("| 9.4.4       | 2026/06/17   | Single-line row. |");
+    });
+
+    test("renders as one table with one <tr> per row after the fold", () => {
+      const html = markdownToHtml(table);
+      expect(html.match(/<table>/g)).toHaveLength(1);
+      expect(html.match(/<tr>/g)).toHaveLength(4); // header + 3 rows
+      expect(html).toContain("<td>9.5.0</td>");
+      // The escaped pipe survives as a literal in the cell, not a split.
+      expect(html).toContain("Foo|Bar");
+    });
+
+    test("a heading ends the table so later prose is never folded", () => {
+      const md = `${table}\n\n## Version 4.18.1 - released 2026-05-28\n\nThis paragraph belongs to the heading.`;
+      const out = repairUnityDocsTables(md);
+      expect(out).toContain("\n## Version 4.18.1 - released 2026-05-28\n");
+      expect(out).toContain("\nThis paragraph belongs to the heading.");
+      expect(out.split("\n").filter((l) => l.startsWith("| 9."))[2]).toBe(
+        "| 9.4.4       | 2026/06/17   | Single-line row. |"
+      );
+    });
+
+    test("leaves markdown with no tables byte-identical", () => {
+      const md = "# Root\n\n## Aug 21, 2026\n\n### 1.0.0\n\n* one\n  * two\n\nprose | with a pipe\n";
+      expect(repairUnityDocsTables(md)).toBe(md);
+    });
+
+    test("prose between the delimiter row and the first data row is kept, not folded", () => {
+      const md = "| A | B\n| - | -\nintro line\n| 1 | x\n* more x";
+      const out = repairUnityDocsTables(md);
+      expect(out).toContain("\nintro line\n");
+      expect(out).toContain("| 1 | x more x |");
+    });
+  });
+
   const CASES: Array<{
     fixture: string;
     sourceKey: string;
@@ -90,11 +150,41 @@ describe("docs.unity.com markdown pipeline", () => {
       minObservations: 3
     },
     { fixture: "vpctl", sourceKey: "vpctl", targetKey: "cli", minObservations: 5 },
+    // Exact counts: the pre-migration Sep 2 cron recorded 29 / 67 / 65 for
+    // these three targets. Anything lower means rows are being lost again.
     {
       fixture: "unity-ads-unity",
       sourceKey: "unity-ads-unity",
       targetKey: "unity",
-      minObservations: 10
+      minObservations: 29,
+      expect: (o) => expect(o).toHaveLength(29)
+    },
+    {
+      fixture: "unity-ads-unity",
+      sourceKey: "unity-ads-android",
+      targetKey: "android",
+      minObservations: 67,
+      expect: (o) => expect(o).toHaveLength(67)
+    },
+    {
+      fixture: "unity-ads-unity",
+      sourceKey: "unity-ads-ios",
+      targetKey: "ios",
+      minObservations: 65,
+      expect: (o) => expect(o).toHaveLength(65)
+    },
+    {
+      fixture: "levelplay-android",
+      sourceKey: "levelplay-android",
+      targetKey: "android",
+      minObservations: 124,
+      expect: (o) => {
+        expect(o).toHaveLength(124);
+        const top = o.find((x) => x.version === "9.6.0")!;
+        // The folded cell reads like the old <td><ul><li> text: no markers.
+        expect(top.items[0].body).toContain("Reduced SDK initialization time.");
+        expect(top.items[0].body).not.toMatch(/(^|\s)[*-]\s/);
+      }
     },
     {
       fixture: "licensing-server",

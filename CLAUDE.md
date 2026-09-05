@@ -133,6 +133,19 @@ the fetcher requests the twin (reporting the human URL downstream so
 `markdownToHtml` just before parsing - so the *snapshot stays raw
 markdown* and a replay re-runs the conversion. When this broke, sixteen
 targets across four crons failed at once with "root heading is missing".
+The twin is *lossy* in one way: GFM has no multi-line cell, so the
+exporter puts the first line of a Notes cell in the row and dumps the
+rest - bullets, nested bullets, blank lines, run-on prose - as bare lines
+after it, with no closing pipe. marked ends the table at the first of
+those, which is how LevelPlay kept 1 of 124 rows and Unity Ads iOS lost
+34 of 65 while `-unity`/`-android` "passed" under the 40% drop cap.
+`repairUnityDocsTables` folds those lines back into the row before marked
+runs: the header row fixes the column count, any pipe past the last
+separator is cell content and gets escaped, bullet markers are stripped
+so the cell reads like the old `<td>` text, and a heading ends the table.
+After the fold every target's record count matched the Sep 2
+pre-migration cron exactly (vivox-core +1, the restored 5.26.0). Compare
+against those baselines, not the floors, when touching this.
 `UNITY_DOCS_CONTRACT=1` runs the live contract test that catches it
 recurring; `node scripts/capture-product-update-fixtures.mjs` refreshes
 the captured markdown fixtures.
@@ -347,7 +360,7 @@ sticky cookie for persona/saved presets. Plan + decisions in
 
 ## Current Test Coverage
 
-`npm test` runs the full Vitest suite — 701 tests across 83 files
+`npm test` runs the full Vitest suite — 709 tests across 83 files
 covering parsers, classification, search SQL, lane logic, ingestion
 normalization, package-version reconciliation (editor "Package changes"
 → `editor_package_versions`, the docs-probe unified-versioning parser,
