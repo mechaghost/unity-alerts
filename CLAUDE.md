@@ -81,6 +81,18 @@ lives in `src/jobs/poll-all.ts` and shells out to each
 so a flaky news endpoint can't block fresh package data; the run
 exits non-zero at the end so Railway flags it as failed.
 
+**Due-time tolerance.** A target's `next_due_at` is stamped from the
+*success* time of the run that refreshed it, which lands a minute or two
+after the cron fired. So the next day's cron reaches a 24h source a
+minute or two *before* it is due, every target returns
+`skipped-not-due`, and the source runs roughly 3 days in 5 (observed
+Sep 5-9: ran/skip/ran/ran/skip). `dueToleranceMs` in the runner lets a
+target run up to 10% of its cadence early (clamped 5 min - 1 h), which
+absorbs scheduler jitter without letting a 6h source double-run. If
+`/api/updates/health` shows a whole family `overdue` with
+`lastAttemptAt` a day old while the cron log shows the run completed,
+look at `skipped-not-due` counts before suspecting Railway.
+
 ### Scraping without brittleness
 
 Three rules, each bought with a production bug:
@@ -360,7 +372,7 @@ sticky cookie for persona/saved presets. Plan + decisions in
 
 ## Current Test Coverage
 
-`npm test` runs the full Vitest suite — 709 tests across 83 files
+`npm test` runs the full Vitest suite — 712 tests across 83 files
 covering parsers, classification, search SQL, lane logic, ingestion
 normalization, package-version reconciliation (editor "Package changes"
 → `editor_package_versions`, the docs-probe unified-versioning parser,

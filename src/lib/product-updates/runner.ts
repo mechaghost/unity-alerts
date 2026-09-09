@@ -57,6 +57,22 @@ export class ProductUpdateAdapterRunError extends Error {
   }
 }
 
+/**
+ * How early a target may run before its `nextDueAt` and still count as due.
+ *
+ * `next_due_at` is stamped from the *success* time, which lands a minute
+ * or two after the cron fired. A daily cron therefore reaches the target
+ * a minute or two *before* it is due the next day, and the whole source
+ * returns skipped-not-due; the day after it is overdue and runs. Every
+ * 24h source on the daily crons was landing ~3 days in 5. 10% of the
+ * cadence, clamped to 5 minutes - 1 hour, absorbs scheduler jitter without
+ * letting a 6h source run twice in one window.
+ */
+export function dueToleranceMs(cadenceHours: number): number {
+  const tenPercent = cadenceHours * 60 * 60_000 * 0.1;
+  return Math.min(Math.max(tenPercent, 5 * 60_000), 60 * 60_000);
+}
+
 export async function runProductUpdateAdapter(
   adapter: ProductUpdateAdapter,
   options: RunProductUpdateOptions = {}
@@ -168,7 +184,12 @@ async function runTarget(
   }
   const now = options.now?.() ?? new Date();
   const bypassSchedule = options.force || replaySnapshot !== null;
-  if (!bypassSchedule && target.nextDueAt && new Date(target.nextDueAt) > now) {
+  if (
+    !bypassSchedule &&
+    target.nextDueAt &&
+    new Date(target.nextDueAt).getTime() - dueToleranceMs(adapter.manifest.cadenceHours) >
+      now.getTime()
+  ) {
     return result(adapter, targetKey, "skipped-not-due");
   }
   if (

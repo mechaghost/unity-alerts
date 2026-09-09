@@ -81,6 +81,56 @@ beforeEach(() => {
 });
 
 describe("Product Updates runner lifecycle", () => {
+  // next_due_at is stamped from the *success* time, a minute or two after
+  // the cron fired, so the next day's cron reached the target a minute or
+  // two before it was due and skipped the whole source. Daily sources were
+  // landing ~3 days in 5 (Sep 5/7/8 ran, Sep 6/9 skipped).
+  // The env gates sit in front of the due check; force:true would bypass
+  // the schedule too, which is the very thing under test.
+  const scheduled = { ingest: process.env.PRODUCT_UPDATE_INGEST_ENABLED, sources: process.env.PRODUCT_UPDATE_SOURCES };
+  const enableScheduling = () => {
+    process.env.PRODUCT_UPDATE_INGEST_ENABLED = "true";
+    process.env.PRODUCT_UPDATE_SOURCES = adapter.manifest.sourceKey;
+  };
+  const restoreScheduling = () => {
+    if (scheduled.ingest === undefined) delete process.env.PRODUCT_UPDATE_INGEST_ENABLED;
+    else process.env.PRODUCT_UPDATE_INGEST_ENABLED = scheduled.ingest;
+    if (scheduled.sources === undefined) delete process.env.PRODUCT_UPDATE_SOURCES;
+    else process.env.PRODUCT_UPDATE_SOURCES = scheduled.sources;
+  };
+
+  test("runs a target that comes due within the tolerance window", async () => {
+    enableScheduling();
+    const now = new Date("2026-09-09T04:47:00Z");
+    mocks.getTarget.mockResolvedValue({
+      ...target,
+      nextDueAt: "2026-09-09T04:49:00Z" // 2 minutes ahead, like the real drift
+    });
+    mocks.createRun.mockRejectedValue(new Error("reached the run stage"));
+
+    await expect(
+      runProductUpdateAdapter(adapter, { now: () => now })
+    ).rejects.toThrow(/reached the run stage/);
+    // Proof it went past the due gate: it took a lease.
+    expect(mocks.acquire).toHaveBeenCalledOnce();
+    restoreScheduling();
+  });
+
+  test("still skips a target that is due well outside the tolerance", async () => {
+    enableScheduling();
+    const now = new Date("2026-09-09T04:47:00Z");
+    mocks.getTarget.mockResolvedValue({
+      ...target,
+      nextDueAt: "2026-09-09T08:00:00Z" // > 1h ahead on a 24h cadence
+    });
+
+    const results = await runProductUpdateAdapter(adapter, { now: () => now });
+    expect(results).toHaveLength(1);
+    expect(results[0].status).toBe("skipped-not-due");
+    expect(mocks.acquire).not.toHaveBeenCalled();
+    restoreScheduling();
+  });
+
   test("releases a lease when run creation fails before heartbeat setup", async () => {
     mocks.createRun.mockRejectedValue(new Error("run insert unavailable"));
 
